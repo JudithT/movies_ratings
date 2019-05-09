@@ -2,10 +2,10 @@
 
 from jinja2 import StrictUndefined
 
-from flask import Flask
+from flask import(Flask, render_template,redirect, request, flash, session)
 from flask_debugtoolbar import DebugToolbarExtension
 
-from model import connect_to_db, db
+from model import User, Rating, Movie,connect_to_db, db
 
 
 app = Flask(__name__)
@@ -22,7 +22,56 @@ app.jinja_env.undefined = StrictUndefined
 @app.route('/')
 def index():
     """Homepage."""
-    return "<html><body>Placeholder for the homepage.</body></html>"
+    return render_template("homepage.html")
+
+@app.route('/users')
+def user_list():
+    """Show list of Users"""
+
+    users = User.query.all()
+
+    return render_template("user_list.html", users=users)
+
+
+@app.route('/Processregister', methods=["POST"])
+def register_process():
+
+    password = request.form.get("password")
+    email= request.form.get("email")
+    
+    user_email = User.query.filter_by(email=email).first()
+    if user_email:
+        flash("email is already in the database")
+    else:
+        flash("email is not in the database")
+        user = User(email = email, password=password)
+        db.session.add(user)
+        db.session.commit()
+
+
+    return redirect('/')
+
+@app.route('/register', methods=["GET"])
+def registration_form():
+    return render_template('register.html')
+
+@app.route('/login')
+def login():
+    password = request.form.get("password")
+    email= request.form.get("email")
+    user = User.query.filter_by(email=email, password=password).first()
+
+    if user:
+        session['user_id'] = user.user_id
+        flash("Logged in ")
+        return redirect('/')
+    else:
+        return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session['user_id'] = None
+    return redirect('/')
 
 
 if __name__ == "__main__":
