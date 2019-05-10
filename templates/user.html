@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Your personal page</h2>
+<p>
+    You'e {{users.age}} young and live at {{users.zipcode}} zipcode!
+    Below is is a list of the movies you watched with their score
+</p>
+    <ul>
+        {%for rating in ratings%}
+        <li>
+                {{rating.movie.title}}({{rating.score}})
+            
+        </li>
+        {%endfor%}
+    </ul>
+    {%endblock%}

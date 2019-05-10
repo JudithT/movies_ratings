@@ -33,30 +33,76 @@ def user_list():
     return render_template("user_list.html", users=users)
 
 
+@app.route('/movies')
+def all_movies():
+    movies = Movie.query.order_by('title').all()
+
+    return render_template("movies.html", movies=movies)
+
+
+@app.route('/movies/<movie_id>')
+def movie(movie_id):
+    movie=Movie.query.filter_by(movie_id=movie_id).first()
+    ratings = movie.ratings
+
+    print("AAA",movie)
+    print("BBB",ratings)
+
+    return render_template("moviepage.html", movie=movie,ratings=ratings)
+
+
+@app.route('/users/<user_id>')
+def userpage(user_id):
+    """Show list of Users"""
+    user = User.query.filter_by(user_id = user_id).first()
+    ratings=Rating.query.filter_by(user_id=user_id).all()
+    print("=====>1",user)
+    print("=====>2",ratings)
+    # ratings = user.ratings
+
+
+    return render_template("user.html", users=user, ratings=ratings)
+
+
+
+
 @app.route('/Processregister', methods=["POST"])
 def register_process():
 
-    password = request.form.get("password")
-    email= request.form.get("email")
-    
+    password=request.form.get("password")
+    email=request.form.get("email")
+    age=request.form.get("age")
+    zipcode=request.form.get("zipcode")
+
+
     user_email = User.query.filter_by(email=email).first()
     if user_email:
         flash("email is already in the database")
     else:
-        flash("email is not in the database")
-        user = User(email = email, password=password)
+        flash("Successful registration")
+        user = User(email = email, password=password, age=age, zipcode=zipcode)
         db.session.add(user)
         db.session.commit()
 
 
     return redirect('/')
 
+
+
+
+
 @app.route('/register', methods=["GET"])
 def registration_form():
     return render_template('register.html')
 
-@app.route('/login')
-def login():
+
+@app.route('/login', methods=["GET"])
+def loginform():
+    return render_template("login.html")
+
+
+@app.route('/login', methods=["POST"])
+def processlogin():
     password = request.form.get("password")
     email= request.form.get("email")
     user = User.query.filter_by(email=email, password=password).first()
@@ -66,7 +112,9 @@ def login():
         flash("Logged in ")
         return redirect('/')
     else:
-        return render_template('login.html')
+        return redirect('/login')
+
+
 
 @app.route('/logout')
 def logout():
